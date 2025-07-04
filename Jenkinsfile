@@ -3,7 +3,7 @@ pipeline {
 
   environment {
     PATH = "/usr/local/go/bin:$PATH"
-    NEXUS_URL = "http://localhost:8082"
+    NEXUS_URL = "http://localhost:8081"
     REPO = "go-artifacts"
     ARTIFACT = "hello"
     VERSION = "v${BUILD_NUMBER}"
