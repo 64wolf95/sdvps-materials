@@ -3,8 +3,9 @@ pipeline {
 
   environment {
     PATH = "/usr/local/go/bin:$PATH"
-    REGISTRY = "localhost:8082"
-    IMAGE = "hello-world"
+    NEXUS_URL = "http://localhost:8082"
+    REPO = "go-artifacts"
+    ARTIFACT = "hello"
     VERSION = "v${BUILD_NUMBER}"
   }
 
@@ -15,21 +16,18 @@ pipeline {
       }
     }
 
-    stage('Test') {
+    stage('Build binary') {
       steps {
-        sh 'go test .'
+        sh 'CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o $ARTIFACT .'
       }
     }
 
-    stage('Build') {
+    stage('Upload to Nexus') {
       steps {
-        sh 'docker build . -t $REGISTRY/$IMAGE:$VERSION'
-      }
-    }
-
-    stage('Push') {
-      steps {
-        sh 'docker login $REGISTRY -u admin -p Nexus-test && docker push $REGISTRY/$IMAGE:$VERSION && docker logout'
+        sh '''
+          curl -u admin:Nexus-test --upload-file $ARTIFACT \
+            $NEXUS_URL/repository/$REPO/$ARTIFACT-$VERSION
+        '''
       }
     }
   }
